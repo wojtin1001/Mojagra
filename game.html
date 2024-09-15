@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rozpocznij Grę</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding-top: 50px;
+        }
+        h1 {
+            font-size: 40px;
+            color: #333;
+        }
+        .stats, .missions {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+        .missions button {
+            font-size: 20px;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .missions button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Twoja postać</h1>
+    <div class="stats">
+        <p>Poziom: 1</p>
+        <p>Życie: 100</p>
+        <p>Siła: 10</p>
+    </div>
+
+    <div class="missions">
+        <h2>Misje:</h2>
+        <button onclick="completeMission('Pokonaj goblina', 20, 50)">Pokonaj goblina (Złoto: 20, Exp: 50)</button>
+        <button onclick="completeMission('Zdobądź skarb', 100, 200)">Zdobądź skarb (Złoto: 100, Exp: 200)</button>
+    </div>
+
+    <script>
+        function completeMission(name, gold, exp) {
+            alert(`Ukończono misję: ${name}\nZdobyto Złoto: ${gold}, Exp: ${exp}`);
+            // Tu możemy dodać logikę aktualizującą statystyki postaci
+        }
+    </script>
+</body>
+</html>
