@@ -6,11 +6,13 @@ const session = require('express-session');
 const path = require('path');
 
 const app = express(); // Tutaj tworzysz aplikację Express
+
 // Parsowanie application/x-www-form-urlencoded (formularz HTML)
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Parsowanie application/json (dla zapytań JSON)
 app.use(bodyParser.json());
+
 const port = 3000;
 
 // Tworzymy połączenie z bazą danych SQLite
@@ -22,10 +24,14 @@ db.serialize(() => {
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE,
+            email TEXT,
             password TEXT,
             level INTEGER DEFAULT 1,
             gold INTEGER DEFAULT 100,
-            strength INTEGER DEFAULT 10
+            strength INTEGER DEFAULT 10,
+            defense INTEGER DEFAULT 10,
+            health INTEGER DEFAULT 100,
+            speed INTEGER DEFAULT 5
         )
     `);
 });
@@ -44,8 +50,19 @@ app.use(session({
 // Ustawienie serwera do obsługi plików statycznych (np. HTML, CSS, JS) z folderu public
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Endpoint do serwowania pliku register.html
 app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
+
+// Endpoint do serwowania pliku login.html
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+// Endpoint do serwowania pliku profile.html
+app.get('/profile', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'profile.html'));
 });
 
 // Endpoint rejestracji użytkownika
@@ -98,16 +115,16 @@ app.post('/register', (req, res) => {
                 [username, email, hashedPassword, chosenClass, initialStats.strength, initialStats.defense, initialStats.health, initialStats.speed],
                 function (err) {
                     if (err) {
-                        console.log("Błąd podczas wstawiania użytkownika do bazy danych:", err.message);
-                        return res.json({ success: false, message: 'Błąd podczas rejestracji' });
+                        console.log("Błąd podczas wstawiania użytkownika do bazy danych:", err.message); // Dodane logowanie błędu
+                        return res.json({ success: false, message: 'Błąd podczas rejestracji: ' + err.message });
                     }
+                    console.log("Pomyślnie zarejestrowano użytkownika:", username);
                     res.json({ success: true });
                 }
             );
         });
     });
 });
-
 
 // Endpoint logowania użytkownika
 app.post('/login', (req, res) => {
@@ -148,8 +165,8 @@ app.post('/logout', (req, res) => {
     });
 });
 
-// Endpoint pobierający dane o zalogowanym użytkowniku (profil gracza)
-app.get('/profile', (req, res) => {
+// Endpoint do pobierania danych o zalogowanym użytkowniku (dla AJAX)
+app.get('/api/profile', (req, res) => {
     if (!req.session.user) {
         console.log("Błąd: użytkownik nie jest zalogowany.");
         return res.status(401).json({ message: 'Użytkownik nie jest zalogowany' });
@@ -157,17 +174,7 @@ app.get('/profile', (req, res) => {
 
     const userId = req.session.user.id;
 
-    // Logujemy dane użytkownika z sesji
-    console.log("ID użytkownika z sesji:", userId);
-
-    // Sprawdzamy, czy userId jest poprawne
-    if (!userId) {
-        console.log("Błąd: brak userId w sesji.");
-        return res.status(500).json({ message: 'Błąd w sesji: brak userId' });
-    }
-
-    // Pobieramy dane użytkownika z bazy danych
-    db.get('SELECT username, level, gold, strength FROM users WHERE id = ?', [userId], (err, user) => {
+    db.get('SELECT username, level, gold, strength, defense, health, speed FROM users WHERE id = ?', [userId], (err, user) => {
         if (err) {
             console.log("Błąd podczas pobierania danych użytkownika:", err.message);
             return res.status(500).json({ message: 'Błąd serwera podczas pobierania danych użytkownika' });
@@ -178,15 +185,15 @@ app.get('/profile', (req, res) => {
             return res.status(404).json({ message: 'Nie znaleziono użytkownika' });
         }
 
-        // Logujemy dane użytkownika
-        console.log("Dane użytkownika:", user);
-
-        // Zwracamy dane użytkownika
+        // Zwracamy dane użytkownika jako JSON (do użytku w AJAX)
         res.json({
             username: user.username,
             level: user.level,
             gold: user.gold,
-            strength: user.strength
+            strength: user.strength,
+            defense: user.defense,
+            health: user.health,
+            speed: user.speed
         });
     });
 });

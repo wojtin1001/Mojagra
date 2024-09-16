@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Gracza</title>
+</head>
+<body>
+    <h2>Witaj, <span id="username"></span>!</h2>
+    <p>Poziom: <span id="level"></span></p>
+    <p>Złoto: <span id="gold"></span></p>
+    <p>Siła: <span id="strength"></span></p>
+    <p>Obrona: <span id="defense"></span></p>
+    <p>Zdrowie: <span id="health"></span></p>
+    <p>Szybkość: <span id="speed"></span></p>
+
+    <script>
+        // Funkcja do załadowania profilu
+        function loadProfile() {
+            fetch('/profile')
+                .then(response => response.json())
+                .then(data => {
+                    // Wstawianie danych do elementów HTML
+                    document.getElementById('username').innerText = data.username;
+                    document.getElementById('level').innerText = data.level;
+                    document.getElementById('gold').innerText = data.gold;
+                    document.getElementById('strength').innerText = data.strength;
+                    document.getElementById('defense').innerText = data.defense;
+                    document.getElementById('health').innerText = data.health;
+                    document.getElementById('speed').innerText = data.speed;
+                })
+                .catch(error => console.error('Błąd:', error));
+        }
+
+        // Wywołaj funkcję załadowania profilu po załadowaniu strony
+        window.onload = function() {
+            loadProfile();
+        };
+    </script>
+</body>
+</html>
