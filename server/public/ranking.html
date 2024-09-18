@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Graczy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #222;
+            color: white;
+            padding: 50px;
+        }
+
+        table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 50%;
+        }
+
+        table, th, td {
+            border: 1px solid #4CAF50;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h2>Ranking Graczy</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Gracz</th>
+                <th>Punkty Prestiżu</th>
+            </tr>
+        </thead>
+        <tbody id="ranking-body">
+        </tbody>
+    </table>
+
+    <script>
+        // Funkcja do załadowania rankingu z serwera
+        function loadRanking() {
+            fetch('/ranking')
+                .then(response => response.json())
+                .then(data => {
+                    const rankingBody = document.getElementById('ranking-body');
+                    rankingBody.innerHTML = '';  // Wyczyść istniejące dane
+
+                    // Dodaj każdego gracza do tabeli
+                    data.forEach(player => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${player.username}</td>
+                            <td>${player.prestige_points}</td>
+                        `;
+                        rankingBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Błąd podczas pobierania rankingu:', error));
+        }
+
+        // Załaduj ranking po załadowaniu strony
+        window.onload = loadRanking;
+    </script>
+</body>
+</html>

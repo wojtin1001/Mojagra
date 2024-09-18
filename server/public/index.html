@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moja Gra RPG - Strona Główna</title>
+    <title>Gra Krasnoludów</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Cinzel', serif;
             text-align: center;
-            background-color: #f4f4f4;
+            background-color: #333;
+            color: white;
             padding: 50px;
         }
 
         h1 {
             font-size: 36px;
             margin-bottom: 20px;
+            color: #4CAF50;
         }
 
         .button {
@@ -35,15 +37,105 @@
         .container {
             margin-top: 50px;
         }
+
+        .changelog {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: left;
+            background-color: #444;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #555;
+        }
+
+        .version {
+            font-size: 20px;
+            margin-top: 20px;
+            color: #ffcc00;
+        }
+
+        .details {
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
-    <h1>Witaj w Świecie Krasnoludów!</h1>
-    <p>Dołącz do epickiej przygody w krasnoludzkim świecie pełnym bitew, magii i przygód!</p>
-    
+    <h1>Gra Krasnoludów</h1>
     <div class="container">
-        <button class="button" onclick="location.href='/register'">Zarejestruj się</button>
-        <button class="button" onclick="location.href='/login'">Zaloguj się</button>
+        <button class="button" onclick="location.href='login.html'">Zaloguj się</button>
+        <button class="button" onclick="location.href='register.html'">Zarejestruj się</button>
+    </div>
+    <div class="changelog">
+        <div class="version">
+            Wersja 0.1.4 – 2024-09-18
+        </div>
+        <div class="details">
+            <strong>Nowe funkcje:</strong>
+            <ul>
+                <li>Dodanie dynamicznych przycisków „+” do ulepszania statystyk postaci.</li>
+                <li>Zastosowanie ikon graficznych zamiast tekstu dla przycisków ulepszania.</li>
+            </ul>
+            <strong>Poprawki:</strong>
+            <ul>
+                <li>Naprawiono błąd „Cannot set properties of null” poprzez dodanie warunków sprawdzających.</li>
+                <li>Ulepszono system wyświetlania komunikatów na stronie zamiast użycia alertów.</li>
+            </ul>
+        </div>
+
+        <div class="version">
+            Wersja 0.1.3 – 2024-09-16
+        </div>
+        <div class="details">
+            <strong>Nowe funkcje:</strong>
+            <ul>
+                <li>Dodanie czcionki "Cinzel" do gry.</li>
+            </ul>
+            <strong>Poprawki:</strong>
+            <ul>
+                <li>Naprawiono problemy z wyświetlaniem czcionki.</li>
+            </ul>
+        </div>
+
+        <div class="version">
+            Wersja 0.1.2 – 2024-09-15
+        </div>
+        <div class="details">
+            <strong>Nowe funkcje:</strong>
+            <ul>
+                <li>Dodano system walki między graczami.</li>
+                <li>Wprowadzono system rankingu i punktów prestiżu.</li>
+            </ul>
+            <strong>Poprawki:</strong>
+            <ul>
+                <li>Naprawiono błąd z ładowaniem profilu gracza po zalogowaniu.</li>
+            </ul>
+        </div>
+
+        <div class="version">
+            Wersja 0.1.1 – 2024-09-14
+        </div>
+        <div class="details">
+            <strong>Nowe funkcje:</strong>
+            <ul>
+                <li>Stworzono system rejestracji i logowania użytkowników z bezpiecznym haszowaniem haseł.</li>
+                <li>Dodano ekran profilu gracza z widocznymi statystykami postaci.</li>
+            </ul>
+            <strong>Poprawki:</strong>
+            <ul>
+                <li>Rozwiązano problemy z tabelą `users` w bazie danych SQLite.</li>
+            </ul>
+        </div>
+
+        <div class="version">
+            Wersja 0.1.0 – 2024-09-10
+        </div>
+        <div class="details">
+            <strong>Nowe funkcje:</strong>
+            <ul>
+                <li>Rozpoczęto projekt gry z użyciem Node.js, Express oraz SQLite.</li>
+                <li>Stworzono bazę danych SQLite z tabelą `users` do przechowywania danych graczy.</li>
+            </ul>
+        </div>
     </div>
 </body>
 </html>

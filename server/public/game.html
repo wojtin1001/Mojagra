@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400..900&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ekran Gry</title>
+    <style>
+        body {
+            font-family: 'Cinzel', serif;
+            text-align: center;
+            background-color: #222;
+            color: white;
+            padding: 50px;
+        }
+
+        h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 30px;
+        }
+
+        .stats {
+            display: inline-block;
+            text-align: left;
+            padding: 20px;
+            border: 1px solid #555;
+            background-color: #444;
+            border-radius: 10px;
+        }
+
+        .button {
+            font-family: 'Cinzel', serif;
+            padding: 15px 30px;
+            font-size: 18px;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .upgrade-button {
+            width: 30px;
+            height: 30px;
+            background: url('images/upgrade_button.png') no-repeat center center;
+            background-size: contain;
+            border: none;
+            cursor: pointer;
+        }
+
+        .actions {
+            margin-top: 20px;
+        }
+
+        #message {
+            display: none;
+            background-color: green;
+            color: white;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="message" style="display:none; background-color: green; color: white; padding: 10px; margin-top: 20px;"></div>
+
+    <h2>Twoja Postać</h2>
+
+    <div class="stats">
+        <p><strong>Nazwa:</strong> <span id="character-name"></span></p>
+        <p><strong>Poziom:</strong> <span id="character-level"></span></p>
+        <p><strong>Siła:</strong> <span id="character-strength"></span> 
+            <button class="upgrade-button" onclick="upgradeStat('strength')"></button> (Koszt: <span id="cost-strength"></span> złota)</p>
+            
+            <p><strong>Zdrowie:</strong> <span id="character-health"></span> 
+            <button class="upgrade-button" onclick="upgradeStat('health')"></button> (Koszt: <span id="cost-health"></span> złota)</p>
+            
+            <p><strong>Obrona:</strong> <span id="character-defense"></span> 
+            <button class="upgrade-button" onclick="upgradeStat('defense')"></button> (Koszt: <span id="cost-defense"></span> złota)</p>
+            
+            <p><strong>Szybkość:</strong> <span id="character-speed"></span> 
+            <button class="upgrade-button" onclick="upgradeStat('speed')"></button> (Koszt: <span id="cost-speed"></span> złota)</p>                         
+    </div>
+
+    <div class="actions">
+        <button class="button" onclick="loadPlayers()">Wybierz Przeciwnika</button>
+        <button class="button" onclick="location.href='ranking.html'">Zobacz Ranking</button>
+        <button class="button" onclick="logout()">Wyloguj</button>
+    </div>
+
+    <!-- Lista przeciwników -->
+    <div id="players-list" style="display: none;">
+        <h3>Wybierz przeciwnika:</h3>
+        <ul id="players"></ul>
+    </div>
+
+    <script>
+        // Funkcja do załadowania danych postaci z serwera
+        function loadProfile() {
+            fetch('/profile-data')
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        window.location.href = '/login';
+                    }
+                })
+                .then(data => {
+                    document.getElementById('character-name').innerText = data.username;
+                    document.getElementById('character-level').innerText = data.level;
+
+                    // Sprawdź, czy elementy istnieją, zanim je zmodyfikujesz
+                    if (document.getElementById('character-strength')) {
+                        document.getElementById('character-strength').innerText = data.strength;
+                    }
+                    if (document.getElementById('character-health')) {
+                        document.getElementById('character-health').innerText = data.health;
+                    }
+                    if (document.getElementById('character-gold')) {
+                        document.getElementById('character-gold').innerText = data.gold;
+                    }
+                    if (document.getElementById('character-defense')) {
+                        document.getElementById('character-defense').innerText = data.defense;
+                    }
+                    if (document.getElementById('character-speed')) {
+                        document.getElementById('character-speed').innerText = data.speed;
+                    }
+
+                    // Wyświetl aktualny koszt ulepszenia dla każdej statystyki
+                    if (document.getElementById('cost-strength')) {
+                        document.getElementById('cost-strength').innerText = data.cost_strength;
+                    }
+                    if (document.getElementById('cost-health')) {
+                        document.getElementById('cost-health').innerText = data.cost_health;
+                    }
+                    if (document.getElementById('cost-defense')) {
+                        document.getElementById('cost-defense').innerText = data.cost_defense;
+                    }
+                    if (document.getElementById('cost-speed')) {
+                        document.getElementById('cost-speed').innerText = data.cost_speed;
+                    }
+                })
+                .catch(error => {
+                    console.error('Błąd podczas ładowania danych:', error);
+                });
+        }
+
+        // Funkcja do ulepszania statystyk
+function upgradeStat(stat) {
+    const userId = 1; // Pobierz rzeczywiste id użytkownika z sesji
+
+    fetch('/upgrade-stat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stat, userId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const messageDiv = document.getElementById('message');
+        if (data.success) {
+            // Wyświetlanie komunikatu na stronie zamiast alert()
+            messageDiv.style.display = 'block';
+            messageDiv.style.backgroundColor = 'green'; // Zielony kolor dla sukcesu
+            messageDiv.innerText = `${stat} ulepszono! Nowa wartość: ${data.updatedStat}`;
+
+            // Zaktualizuj wyświetlane statystyki
+            if (document.getElementById(`character-${stat}`)) {
+                document.getElementById(`character-${stat}`).innerText = data.updatedStat;
+            }
+            if (document.getElementById('character-gold')) {
+                document.getElementById('character-gold').innerText = data.newGold;
+            }
+
+            // Ukryj komunikat po 3 sekundach
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+
+            // Zaktualizuj koszt po ulepszeniu
+            if (document.getElementById(`cost-${stat}`)) {
+                document.getElementById(`cost-${stat}`).innerText = data.nextUpgradeCost;
+            }
+        } else {
+            // Wyświetlanie komunikatu o błędzie
+            messageDiv.style.display = 'block';
+            messageDiv.style.backgroundColor = 'red'; // Czerwony kolor dla błędu
+            messageDiv.innerText = data.message;
+
+            // Ukryj komunikat po 3 sekundach
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
+    })
+    .catch(error => {
+        console.error('Błąd podczas ulepszania:', error);
+
+        const messageDiv = document.getElementById('message');
+        messageDiv.style.display = 'block';
+        messageDiv.style.backgroundColor = 'red'; // Czerwony kolor dla błędu
+        messageDiv.innerText = 'Błąd podczas ulepszania!';
+
+        // Ukryj komunikat po 3 sekundach
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 3000);
+    });
+}
+
+        // Funkcja do załadowania listy dostępnych graczy
+        function loadPlayers() {
+            fetch('/players')
+                .then(response => response.json())
+                .then(players => {
+                    const playersList = document.getElementById('players');
+                    playersList.innerHTML = '';
+                    players.forEach(player => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<button onclick="fight(${player.id})">Walka z ${player.username}</button>`;
+                        playersList.appendChild(li);
+                    });
+                    document.getElementById('players-list').style.display = 'block';
+                })
+                .catch(error => console.error('Błąd podczas pobierania graczy:', error));
+        }
+
+        // Funkcja do walki z wybranym przeciwnikiem
+        function fight(opponentId) {
+            fetch('/fight', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ opponentId: opponentId })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert(result.message);
+                    loadProfile();
+                } else {
+                    alert('Błąd podczas walki: ' + result.message);
+                }
+            })
+            .catch(error => console.error('Błąd podczas walki:', error));
+        }
+
+        // Funkcja do wylogowania użytkownika
+        function logout() {
+            fetch('/logout', { method: 'POST' })
+                .then(() => {
+                    window.location.href = '/login';
+                })
+                .catch(error => console.error('Błąd wylogowania:', error));
+        }
+
+        // Po załadowaniu strony, pobierz dane użytkownika
+        window.onload = function() {
+            loadProfile();
+        };
+    </script>
+</body>
+</html>

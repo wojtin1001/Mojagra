@@ -4,45 +4,114 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logowanie</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #333;
+            color: white;
+            padding: 50px;
+        }
+
+        form {
+            display: inline-block;
+            text-align: left;
+            padding: 20px;
+            border: 1px solid #555;
+            background-color: #444;
+            border-radius: 10px;
+        }
+
+        input {
+            display: block;
+            margin-bottom: 15px;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px;
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
     <h2>Zaloguj się</h2>
     <form id="loginForm" method="POST">
         <label for="username">Nazwa użytkownika:</label>
-        <input type="text" id="username" name="username" required><br><br>
+        <input type="text" id="username" name="username" required>
 
         <label for="password">Hasło:</label>
-        <input type="password" id="password" name="password" required><br><br>
+        <input type="password" id="password" name="password" required>
 
         <button type="submit">Zaloguj</button>
     </form>
 
     <script>
-        document.querySelector('form').addEventListener('submit', function(event) {
-            event.preventDefault();  // Zapobiega domyślnemu wysłaniu formularza
-            const formData = new FormData(this);
-            const data = {
-                username: formData.get('username'),
-                password: formData.get('password'),
-            };
+    document.querySelector('form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const data = {
+            username: formData.get('username'),
+            password: formData.get('password'),
+        };
 
-            fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    window.location.href = '/profile';  // Przekierowanie po sukcesie
-                } else {
-                    alert('Błąd logowania: ' + result.message);
-                }
-            })
-            .catch(error => console.error('Błąd:', error));
-        });
-    </script>
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                window.location.href = 'game.html';  // Przekierowanie po zalogowaniu
+            } else {
+                alert('Błąd logowania: ' + result.message);
+            }
+        })
+        .catch(error => console.error('Błąd:', error));
+    });
+</script>
+<script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const data = {
+            username: formData.get('username'),
+            password: formData.get('password'),
+        };
+
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                window.location.href = 'game.html';  // Przekierowanie po zalogowaniu
+            } else {
+                alert('Błąd logowania: ' + result.message);
+            }
+        })
+        .catch(error => console.error('Błąd:', error));
+    });
+</script>
+
 </body>
 </html>

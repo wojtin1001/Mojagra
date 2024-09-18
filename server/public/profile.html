@@ -17,10 +17,9 @@
     <script>
         // Funkcja do załadowania profilu
         function loadProfile() {
-            fetch('/profile')
+            fetch('/profile-data')
                 .then(response => response.json())
                 .then(data => {
-                    // Wstawianie danych do elementów HTML
                     document.getElementById('username').innerText = data.username;
                     document.getElementById('level').innerText = data.level;
                     document.getElementById('gold').innerText = data.gold;
@@ -32,7 +31,6 @@
                 .catch(error => console.error('Błąd:', error));
         }
 
-        // Wywołaj funkcję załadowania profilu po załadowaniu strony
         window.onload = function() {
             loadProfile();
         };
