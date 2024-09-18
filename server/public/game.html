@@ -76,6 +76,7 @@
     <div class="stats">
         <p><strong>Nazwa:</strong> <span id="character-name"></span></p>
         <p><strong>Poziom:</strong> <span id="character-level"></span></p>
+        <p><strong>Złoto:</strong> <span id="character-gold"></span></p>
         <p><strong>Siła:</strong> <span id="character-strength"></span> 
             <button class="upgrade-button" onclick="upgradeStat('strength')"></button> (Koszt: <span id="cost-strength"></span> złota)</p>
             
@@ -155,6 +156,9 @@
         // Funkcja do ulepszania statystyk
 function upgradeStat(stat) {
     const userId = 1; // Pobierz rzeczywiste id użytkownika z sesji
+
+// funckja
+
 
     fetch('/upgrade-stat', {
         method: 'POST',

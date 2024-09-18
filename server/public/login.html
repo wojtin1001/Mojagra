@@ -59,59 +59,36 @@
     </form>
 
     <script>
-    document.querySelector('form').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const formData = new FormData(this);
-        const data = {
-            username: formData.get('username'),
-            password: formData.get('password'),
-        };
-
+    // Funkcja handleLogin odpowiedzialna za logowanie użytkownika
+    function handleLogin(username, password) {
         fetch('/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify({ username, password }),
         })
         .then(response => response.json())
         .then(result => {
             if (result.success) {
-                window.location.href = 'game.html';  // Przekierowanie po zalogowaniu
+                // Po udanym logowaniu, przekierowanie na stronę gry
+                window.location.href = 'game.html';
             } else {
                 alert('Błąd logowania: ' + result.message);
             }
         })
-        .catch(error => console.error('Błąd:', error));
-    });
-</script>
-<script>
+        .catch(error => console.error('Błąd podczas logowania:', error));
+    }
+
+    // Obsługa formularza logowania
     document.querySelector('form').addEventListener('submit', function(event) {
         event.preventDefault();
         const formData = new FormData(this);
-        const data = {
-            username: formData.get('username'),
-            password: formData.get('password'),
-        };
+        const username = formData.get('username');
+        const password = formData.get('password');
 
-        fetch('/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                window.location.href = 'game.html';  // Przekierowanie po zalogowaniu
-            } else {
-                alert('Błąd logowania: ' + result.message);
-            }
-        })
-        .catch(error => console.error('Błąd:', error));
+        handleLogin(username, password); // Wywołanie funkcji handleLogin
     });
-</script>
-
+    </script>
 </body>
 </html>

@@ -49,6 +49,13 @@ db.serialize(() => {
 // Obsługa plików statycznych
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Globalny handler błędów Express
+app.use((err, req, res, next) => {
+    console.error('Wystąpił błąd:', err.stack);
+    res.status(500).send('Coś poszło nie tak!');
+});
+
+
 // Endpoint wyświetlający stronę logowania
 app.get('/login', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
@@ -106,27 +113,40 @@ app.post('/register', (req, res) => {
     });
 });
 
-// Endpoint logowania
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
 
-    // Znajdź użytkownika w bazie danych
     db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {
         if (!user) {
             return res.json({ success: false, message: 'Nie znaleziono użytkownika' });
         }
 
-        // Sprawdź hasło
         bcrypt.compare(password, user.password, (err, result) => {
             if (result) {
-                req.session.user = user;  // Zapisanie użytkownika w sesji
-                return res.json({ success: true });
+                db.get('SELECT * FROM users WHERE id = ?', [user.id], (err, updatedUser) => {
+                    if (err) {
+                        return res.status(500).json({ success: false, message: 'Błąd serwera podczas logowania' });
+                    }
+
+                    // Przypisz dane użytkownika do sesji
+                    req.session.user = updatedUser;
+
+                    // Logowanie danych sesji dla debugowania
+                    console.log('Dane sesji użytkownika po zalogowaniu:', req.session.user);
+
+                    res.json({
+                        success: true,
+                        user: updatedUser
+                    });
+                });
             } else {
                 return res.json({ success: false, message: 'Nieprawidłowe hasło' });
             }
         });
     });
 });
+
+
 // Endpoint dodający punkty prestiżu po wygranej walce
 app.post('/win-fight', (req, res) => {
     if (!req.session.user) {
@@ -151,9 +171,9 @@ const calculateNewUpgradeCost = (lastCost) => {
 };
 
 // Endpoint do ulepszania statystyk z dynamicznym kosztem (x + 10%)
-// Endpoint do ulepszania statystyk z dynamicznym kosztem (x + 10%)
 app.post('/upgrade-stat', (req, res) => {
-    const { stat, userId } = req.body; // Statystyka, którą chcemy ulepszyć (strength, defense, health, speed)
+    const { stat } = req.body; // Pobieramy statystykę, którą chcemy ulepszyć (strength, defense, health, speed)
+    const userId = req.session.user.id; // Pobieramy ID użytkownika z sesji
 
     // Znajdź użytkownika w bazie danych
     db.get('SELECT * FROM users WHERE id = ?', [userId], (err, user) => {
@@ -188,35 +208,47 @@ app.post('/upgrade-stat', (req, res) => {
                 return res.status(400).json({ success: false, message: 'Nieprawidłowa statystyka' });
         }
 
-        // Obliczenie nowego kosztu ulepszenia
         const newCost = calculateNewUpgradeCost(currentCost);
 
-        // Logowanie w celu debugowania
-        console.log('Koszt ulepszenia:', newCost, 'Złoto użytkownika:', user.gold);
-
-        // Sprawdź, czy użytkownik ma wystarczającą ilość złota
         if (user.gold < newCost) {
             return res.status(400).json({ success: false, message: 'Nie masz wystarczającej ilości złota' });
         }
 
-        // Aktualizacja statystyk i odejmowanie złota
         const newGold = user.gold - newCost;
         const updatedStatValue = currentStatValue + 1;
 
-        const query = `UPDATE users SET ${stat} = ?, gold = ?, ${lastUpgradeCostField} = ? WHERE id = ?`;
+        // Aktualizacja bazy danych
+        db.run(`UPDATE users SET ${stat} = ?, gold = ?, ${lastUpgradeCostField} = ? WHERE id = ?`,
+            [updatedStatValue, newGold, newCost, userId], function(err) {
+                if (err) {
+                    console.error('Błąd podczas aktualizacji statystyki:', err.message);
+                    return res.status(500).json({ success: false, message: 'Błąd podczas aktualizacji statystyki' });
+                }
 
-        db.run(query, [updatedStatValue, newGold, newCost, userId], (err) => {
-            if (err) {
-                return res.status(500).json({ success: false, message: 'Błąd podczas aktualizacji statystyki' });
+                // POBIERAMY ZAKTUALIZOWANE DANE I AKTUALIZUJEMY SESJĘ
+                db.get('SELECT * FROM users WHERE id = ?', [userId], (err, updatedUser) => {
+                    if (err) {
+                        console.error('Błąd podczas odświeżania danych użytkownika:', err.message);
+                        return res.status(500).json({ message: 'Błąd podczas odświeżania danych użytkownika' });
+                    }
+
+                    // Aktualizujemy sesję użytkownika
+                    req.session.user = updatedUser;
+
+                    // Dodajemy logowanie dla debugowania (możesz to usunąć po testach)
+                    console.log('Zaktualizowane dane sesji dla użytkownika:', updatedUser.username, ' | Siła:', updatedUser.strength, ' | Złoto:', updatedUser.gold);
+
+                    // Zwracamy odpowiedź do klienta
+                    res.json({
+                        success: true,
+                        message: `Ulepszono ${stat}. Nowa wartość: ${updatedStatValue}`,
+                        newGold: newGold,
+                        updatedStat: updatedStatValue,
+                        nextUpgradeCost: newCost
+                    });
+                });
             }
-            res.json({
-                success: true,
-                message: `Ulepszono ${stat}! Nowa wartość: ${updatedStatValue}`,
-                newGold: newGold,
-                updatedStat: updatedStatValue,
-                nextUpgradeCost: newCost
-            });
-        });
+        );
     });
 });
 
@@ -333,11 +365,11 @@ app.get('/profile-data', (req, res) => {
 
     const userId = req.session.user.id;
 
-    db.get('SELECT username, level, gold, strength, defense, health, speed, last_upgrade_cost_strength, last_upgrade_cost_defense, last_upgrade_cost_health, last_upgrade_cost_speed FROM users WHERE id = ?', [userId], (err, user) => {
+    // Pobierz dane użytkownika z bazy danych na podstawie jego sesji
+    db.get('SELECT * FROM users WHERE id = ?', [userId], (err, user) => {
         if (err) return res.status(500).json({ message: 'Błąd serwera' });
         if (!user) return res.status(404).json({ message: 'Nie znaleziono użytkownika' });
 
-        // Zwracamy również koszty ulepszeń
         res.json({
             username: user.username,
             level: user.level,
@@ -372,7 +404,14 @@ app.post('/logout', (req, res) => {
     });
 });
 
-// Uruchomienie serwera
-app.listen(port, () => {
-    console.log(`Serwer działa na porcie http://localhost:${port}`);
+const server = app.listen(port, () => {
+    console.log(`Serwer działa na porcie ${port}`);
+});
+
+// Obsługa poprawnego zamknięcia serwera
+process.on('SIGINT', () => {
+    server.close(() => {
+        console.log('Serwer został zamknięty');
+        process.exit(0);
+    });
 });
